@@ -12,6 +12,7 @@ struct ble_demo_iosApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(BleManager())
         }
     }
 }
