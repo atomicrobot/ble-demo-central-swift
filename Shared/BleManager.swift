@@ -103,7 +103,7 @@ extension BleManager: CBCentralManagerDelegate {
 
     // Found a peripheral but services are nil so we need to discover them
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
-        print("\(formatter.string(from: Date())) Connected to peripheral \(peripheral.identifier) \(peripheral.name)")
+        print("\(formatter.string(from: Date())) Connected to peripheral \(peripheral.identifier) \(String(describing: peripheral.name))")
 
         peripheral.discoverServices(nil)
     }
@@ -112,7 +112,7 @@ extension BleManager: CBCentralManagerDelegate {
 extension BleManager: CBPeripheralDelegate {
     // Found all services but the characteristics are nil so we need to discover them
     func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
-        print("\(formatter.string(from: Date())) didDiscoverServices - \(peripheral.services?.count)")
+        print("\(formatter.string(from: Date())) didDiscoverServices - \(String(describing: peripheral.services?.count))")
         guard let services = peripheral.services else { return }
 
         for service in services {
@@ -122,9 +122,11 @@ extension BleManager: CBPeripheralDelegate {
 
     // Found all characteristics
     func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
-        print("\(formatter.string(from: Date())) didDiscoverCharacteristicsFor service \(service.uuid) characteristics \(service.characteristics)")
+        print("\(formatter.string(from: Date())) didDiscoverCharacteristicsFor service \(service.uuid) characteristics \(String(describing: service.characteristics))")
         var services = servicesPublisher
         services.append(service)
-        servicesPublisher = services
+        servicesPublisher = Array(Set(services))
+            .filter { !($0.characteristics?.isEmpty ?? true) }
+            .sorted(by: { $0.uuid.uuidString > $1.uuid.uuidString })
     }
 }

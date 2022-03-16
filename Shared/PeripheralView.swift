@@ -12,7 +12,12 @@ struct PeripheralView: View {
                 if let characteristics = service.characteristics,
                    !characteristics.isEmpty {
                     ForEach(characteristics, id: \.uuid) { characteristic in
-                        Text(characteristic.uuid.uuidString)
+                        NavigationLink {
+                            CharacteristicView(service: service,
+                                               characteristic: characteristic)
+                        } label: {
+                            Text(characteristic.uuid.uuidString)
+                        }
                     }
                 } else {
                     Text("No characteristics")
