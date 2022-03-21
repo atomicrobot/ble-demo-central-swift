@@ -19,9 +19,11 @@ class BleManager: NSObject, ObservableObject {
     lazy var centralManager: CBCentralManager = CBCentralManager(delegate: self, queue: nil)
     private var foundPeripheralsSubject = CurrentValueSubject<Set<PeripheralWrapper>, Never>(Set())
     private var foundPeripheralSubject = PassthroughSubject<PeripheralWrapper, Never>()
+    private var connectedPeripheral: CBPeripheral? = nil
     @Published var peripheralsPublisher = Set<PeripheralWrapper>()
     @Published var servicesPublisher = [CBService]()
     @Published var centralState = CBManagerState.unknown
+    @Published var readValue = ""
     var cancellables = Set<AnyCancellable>()
 
     let formatter: ISO8601DateFormatter
@@ -42,8 +44,8 @@ class BleManager: NSObject, ObservableObject {
 
                 return mutatedPeripherals
             }
-            .sink(receiveValue: { [unowned self] peripherals in
-                foundPeripheralsSubject.send(peripherals)
+            .sink(receiveValue: { [weak self] peripherals in
+                self?.foundPeripheralsSubject.send(peripherals)
             })
             .store(in: &cancellables)
     }
@@ -62,12 +64,29 @@ class BleManager: NSObject, ObservableObject {
     }
 
     func connect(to uuid: UUID) {
+        guard connectedPeripheral == nil else { return }
         let wrapper = peripheralsPublisher.first { $0.peripheral.identifier == uuid }
         guard let peripheral = wrapper?.peripheral else { return }
 
         peripheral.delegate = self
         print("\(formatter.string(from: Date())) Starting connection")
         centralManager.connect(peripheral, options: nil)
+    }
+
+    func readValue(characteristic: CBCharacteristic) {
+        connectedPeripheral?.readValue(for: characteristic)
+    }
+
+    func write(value: Data, to characteristic: CBCharacteristic) {
+        connectedPeripheral?.writeValue(value, for: characteristic, type: .withResponse)
+    }
+
+    func subscribeToNotifications(characteristic: CBCharacteristic) {
+        connectedPeripheral?.setNotifyValue(true, for: characteristic)
+     }
+
+    func unsubscribeToNotifications(characteristic: CBCharacteristic) {
+        connectedPeripheral?.setNotifyValue(false, for: characteristic)
     }
 }
 
@@ -105,6 +124,7 @@ extension BleManager: CBCentralManagerDelegate {
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
         print("\(formatter.string(from: Date())) Connected to peripheral \(peripheral.identifier) \(String(describing: peripheral.name))")
 
+        connectedPeripheral = peripheral
         peripheral.discoverServices(nil)
     }
 }
@@ -128,5 +148,35 @@ extension BleManager: CBPeripheralDelegate {
         servicesPublisher = Array(Set(services))
             .filter { !($0.characteristics?.isEmpty ?? true) }
             .sorted(by: { $0.uuid.uuidString > $1.uuid.uuidString })
+    }
+
+    func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
+        if let error = error {
+            return
+        }
+        guard let data = characteristic.value else {
+            return
+        }
+        let stringValue = String(decoding: data, as: UTF8.self)
+        print("\(formatter.string(from: Date())) didUpdateValueFor value \(stringValue)")
+        readValue = stringValue
+    }
+
+    func peripheral(_ peripheral: CBPeripheral, didWriteValueFor characteristic: CBCharacteristic, error: Error?) {
+        if let error = error {
+            return
+        }
+        // TODO: Update UI?
+    }
+
+    /// Successfully subscribed to or unsubscribed from notifications/indications on a characteristic
+    func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
+        if let error = error {
+            return
+        }
+        guard let data = characteristic.value else {
+            return
+        }
+        let stringValue = String(decoding: data, as: UTF8.self)
     }
 }

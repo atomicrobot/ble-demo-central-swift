@@ -2,6 +2,7 @@ import SwiftUI
 import CoreBluetooth
 
 struct CharacteristicView: View {
+    @Environment(\.isPresented) var isPresented
     @EnvironmentObject var bleManager: BleManager
     var service: CBService
     var characteristic: CBCharacteristic
@@ -12,7 +13,7 @@ struct CharacteristicView: View {
             if characteristic.properties.contains(.read) {
                 Section("Read") {
                     Button("Read") {
-                        // TODO: Read
+                        bleManager.readValue(characteristic: characteristic)
                     }
                 }
             }
@@ -20,15 +21,22 @@ struct CharacteristicView: View {
                 Section("Write") {
                     TextField("value", text: $writeValue)
                         .onSubmit {
-                            // TODO: Write
+                            guard let data = writeValue.data(using: .utf8) else { return }
+                            bleManager.write(value: data, to: characteristic)
                         }
                 }
             }
             if characteristic.properties.contains(.notify) {
                 Section("Notify") {
                     Button("Start Observation") {
-                        // TODO: Notify
+                        bleManager.subscribeToNotifications(characteristic: characteristic)
                     }
+                }
+            }
+            if characteristic.properties.contains(.notify)
+                || characteristic.properties.contains(.read) {
+                Section("Read/Notify Value") {
+                    Text(bleManager.readValue)
                 }
             }
         }
@@ -36,6 +44,12 @@ struct CharacteristicView: View {
             ToolbarItem(placement: .principal) {
                 Text(characteristic.uuid.uuidString)
                     .foregroundColor(.cyan)
+            }
+        }
+        .onChange(of: isPresented) { newValue in
+            if !newValue {
+                bleManager.unsubscribeToNotifications(characteristic: characteristic)
+                bleManager.readValue = ""
             }
         }
     }
