@@ -58,6 +58,7 @@
 		6660252D27D26D16007DC558 /* BleManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BleManager.swift; sourceTree = "<group>"; };
 		66A0F7A527D8E7CC006D2487 /* PeripheralView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeripheralView.swift; sourceTree = "<group>"; };
 		66A2AA2427E25E6000249C26 /* CharacteristicView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacteristicView.swift; sourceTree = "<group>"; };
+		66A2AA2727EA57C300249C26 /* ble-demo-ios--iOS--Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "ble-demo-ios--iOS--Info.plist"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -95,6 +96,7 @@
 		666024EB27D26CE3007DC558 = {
 			isa = PBXGroup;
 			children = (
+				66A2AA2727EA57C300249C26 /* ble-demo-ios--iOS--Info.plist */,
 				666024F027D26CE3007DC558 /* Shared */,
 				666024FF27D26CE4007DC558 /* macOS */,
 				6660250827D26CE4007DC558 /* Tests iOS */,
@@ -486,6 +488,7 @@
 				DEVELOPMENT_TEAM = 928PH8VG5G;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "ble-demo-ios--iOS--Info.plist";
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "For demo purposes!";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -517,6 +520,7 @@
 				DEVELOPMENT_TEAM = 928PH8VG5G;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "ble-demo-ios--iOS--Info.plist";
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "For demo purposes!";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;

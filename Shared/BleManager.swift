@@ -55,8 +55,10 @@ class BleManager: NSObject, ObservableObject {
     }
 
     func startScan() {
-        centralManager.scanForPeripherals(withServices: nil,
-                                          options: [CBCentralManagerScanOptionAllowDuplicatesKey : true])
+        centralManager.scanForPeripherals(
+            withServices: nil,
+            options: [CBCentralManagerScanOptionAllowDuplicatesKey : true]
+        )
     }
 
     func stopScan() {
@@ -73,6 +75,15 @@ class BleManager: NSObject, ObservableObject {
         centralManager.connect(peripheral, options: nil)
     }
 
+    // Not called yet
+    func disconnect() {
+        guard let connectedPeripheral = connectedPeripheral else {
+            return
+        }
+
+        centralManager.cancelPeripheralConnection(connectedPeripheral)
+    }
+
     func readValue(characteristic: CBCharacteristic) {
         connectedPeripheral?.readValue(for: characteristic)
     }
@@ -83,7 +94,7 @@ class BleManager: NSObject, ObservableObject {
 
     func subscribeToNotifications(characteristic: CBCharacteristic) {
         connectedPeripheral?.setNotifyValue(true, for: characteristic)
-     }
+    }
 
     func unsubscribeToNotifications(characteristic: CBCharacteristic) {
         connectedPeripheral?.setNotifyValue(false, for: characteristic)
@@ -93,7 +104,6 @@ class BleManager: NSObject, ObservableObject {
 extension BleManager: CBCentralManagerDelegate {
     func centralManagerDidUpdateState(_ central: CBCentralManager) {
         centralState = central.state
-        // TODO: Add comments explaining the states
         switch central.state {
         case .unknown:
             print("The state is .unknown")
@@ -141,7 +151,8 @@ extension BleManager: CBPeripheralDelegate {
     }
 
     // Found all characteristics
-    func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
+    func peripheral(_ peripheral: CBPeripheral,
+                    didDiscoverCharacteristicsFor service: CBService, error: Error?) {
         print("\(formatter.string(from: Date())) didDiscoverCharacteristicsFor service \(service.uuid) characteristics \(String(describing: service.characteristics))")
         var services = servicesPublisher
         services.append(service)
@@ -150,7 +161,9 @@ extension BleManager: CBPeripheralDelegate {
             .sorted(by: { $0.uuid.uuidString > $1.uuid.uuidString })
     }
 
-    func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
+    func peripheral(_ peripheral: CBPeripheral,
+                    didUpdateValueFor characteristic: CBCharacteristic,
+                    error: Error?) {
         if let error = error {
             return
         }
@@ -170,7 +183,9 @@ extension BleManager: CBPeripheralDelegate {
     }
 
     /// Successfully subscribed to or unsubscribed from notifications/indications on a characteristic
-    func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
+    func peripheral(_ peripheral: CBPeripheral,
+                    didUpdateNotificationStateFor characteristic: CBCharacteristic,
+                    error: Error?) {
         if let error = error {
             return
         }
